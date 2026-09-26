@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block page_title %}BC {{ po.po_number }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Bon de commande <strong>{{ po.po_number }}</strong></h1>
+  <div class="header-actions">
+    <form method="post" action="/purchase-orders/{{ po.id }}/receive" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-success">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        R&eacute;ception totale
+      </button>
+    </form>
+    <form method="post" action="/purchase-orders/{{ po.id }}/status" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <input type="hidden" name="status" value="sent">
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Marquer envoy&eacute;
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div class="meta-section">
+      <span class="meta-label">Fournisseur</span>
+      <span class="meta-value" style="font-weight:600">{{ supplier.name if supplier else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ supplier.ice if supplier else '' }}</span>
+    </div>
+    <div class="meta-section" style="text-align:right">
+      <span class="meta-label">Statut</span>
+      <span class="meta-value"><span class="status"><span class="status-dot {{ po.status }}"></span>{{ po.status }}</span></span>
+      <span class="meta-value text-sm">Cr&eacute;&eacute; le {{ po.created_at.strftime('%d/%m/%Y') }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="padding:0">
+  <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+    <h2 style="font-size:0.88rem;font-weight:600">Lignes</h2>
+  </div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Description</th><th class="num">Qt&eacute;</th><th class="num">Re&ccedil;u</th><th class="num">Prix unit.</th><th class="num">TVA</th><th class="num">Total HT</th><th class="num">Total TTC</th></tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.sort_order }}</td>
+          <td>{{ line.description }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num {% if line.received_quantity >= line.quantity %}text-success{% elif line.received_quantity > 0 %}text-warning{% endif %}">{{ line.received_quantity }}</td>
+          <td class="num">{{ "%.2f"|format(line.unit_price) }}</td>
+          <td class="num">{{ "%.0f"|format(line.tva_rate * 100) }}%</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ht) }}</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ttc) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="6" class="num"><strong>Totaux</strong></td><td class="num"><strong>{{ "%.2f"|format(po.total_ht) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(po.total_ttc) }}</strong></td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+{% if po.status == 'draft' %}
+<div class="card">
+  <div class="card-header"><h3>Ajouter une ligne</h3></div>
+  <form method="post" action="/purchase-orders/{{ po.id }}/lines">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Produit</label>
+        <select name="product_id" onchange="fillPOProduct(this)">
+          <option value="">&mdash; Saisie manuelle &mdash;</option>
+          {% for p in products %}
+          <option value="{{ p.id }}" data-price="{{ "%.2f"|format(p.unit_price) }}" data-rate="{{ p.tva_rate_id }}">{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <input type="text" name="description" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantit&eacute; *</label>
+        <input type="number" step="0.001" name="quantity" value="1" required>
+      </div>
+      <div class="form-group">
+        <label>Prix unitaire</label>
+        <input type="number" step="0.01" name="unit_price" value="0.00">
+      </div>
+      <div class="form-group">
+        <label>TVA *</label>
+        <select name="tva_rate">
+          {% for rate in tva_rates %}
+          <option value="{{ rate.rate }}">{{ rate.label }} ({{ "%.0f"|format(rate.rate * 100) }}%)</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+{% endif %}
+
+<script>
+function fillPOProduct(s) {
+  var o = s.options[s.selectedIndex], d = document.querySelector('[name="description"]'), p = document.querySelector('[name="unit_price"]');
+  if (o.value) { d.value = o.text; p.value = o.dataset.price; }
+}
+</script>
+{% endblock %}

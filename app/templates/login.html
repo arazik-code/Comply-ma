@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="{{ request.session.get('lang', 'fr') }}" dir="{{ 'rtl' if request.session.get('lang') == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COMPLY-MA — Connexion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" type="image/svg+xml" href="/favicon.ico">
+</head>
+<body class="login-page">
+  <div class="login-card">
+    <div class="login-brand">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#c89b3c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.5rem"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <h1><span>C</span>OMPLY-MA</h1>
+      <p>Facturation &eacute;lectronique conforme DGI</p>
+    </div>
+    {% if error %}
+    <div class="alert alert-error">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+    <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <div class="form-group">
+        <label>Identifiant</label>
+        <input type="text" name="username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" name="password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Connexion</button>
+    </form>
+    <div class="login-footer">
+      <a href="/lang/fr">FR</a> / <a href="/lang/ar">عربي</a>
+      <span style="margin:0 0.6rem;color:var(--text-faint)">·</span>
+      <a href="/" style="font-size:0.85rem">&larr; Retour &agrave; l'accueil</a>
+    </div>
+  </div>
+</body>
+</html>

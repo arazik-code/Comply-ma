@@ -1,0 +1,41 @@
+# COMPLY-MA — Single Client Mode (standalone) — PRODUCTION
+# Une instance par entreprise cliente (modèle de déploiement d'origine).
+#
+# Usage :
+#   cp ../.env.example ../.env   # puis remplir les valeurs
+#   docker compose -f docker-compose.single.yml up -d
+
+services:
+  comply-ma:
+    build:
+      context: ..
+      dockerfile: comply-ma/Dockerfile
+    container_name: comply-ma-single
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      - COMPLY_MA_DATABASE_URL=sqlite:///./data/comply-ma.db
+      - COMPLY_MA_CABINET_MODE=false
+      # SECRET_KEY doit être défini dans ../.env — l'app refuse de démarrer sans.
+      - COMPLY_MA_SECRET_KEY=${SECRET_KEY:?SECRET_KEY manquant dans .env}
+      - COMPLY_MA_ENVIRONMENT=${COMPLY_MA_ENVIRONMENT:-production}
+    volumes:
+      - comply-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  comply-data:
+    driver: local

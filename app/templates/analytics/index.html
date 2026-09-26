@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics — COMPLY-MA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">📊 Analytics</h1>
+    <p class="page-subtitle">KPIs, tendances et analyses avancées</p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button onclick="refreshAnalytics()" class="btn btn-outline btn-sm">↻ Actualiser</button>
+    <button onclick="exportReport()" class="btn btn-outline btn-sm">📥 Exporter</button>
+  </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-4" style="margin-bottom:24px;">
+  <div class="card stat-card">
+    <div class="stat-label">Chiffre d'affaires TTC</div>
+    <div class="stat-value">{{ "{:,.2f}".format(kpi.total_revenue) }} MAD</div>
+    <div class="stat-sub stat-up">{{ kpi.total_invoices }} factures</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Facture moyenne</div>
+    <div class="stat-value">{{ "{:,.2f}".format(kpi.avg_invoice) }} MAD</div>
+    <div class="stat-sub">HT: {{ "{:,.2f}".format(kpi.total_ht) }} MAD</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">Score conformité</div>
+    <div class="stat-value {% if kpi.compliance_score >= 90 %}stat-up{% elif kpi.compliance_score >= 70 %}stat-neutral{% else %}stat-down{% endif %}">{{ kpi.compliance_score }}%</div>
+    <div class="stat-sub">{{ kpi.paid_count }} payées / {{ kpi.overdue_count }} en retard</div>
+  </div>
+  <div class="card stat-card">
+    <div class="stat-label">DSO (Délai encaissement)</div>
+    <div class="stat-value">{{ kpi.avg_days_overdue }}j</div>
+    <div class="stat-sub">{{ kpi.overdue_count }} factures en souffrance</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid grid-2" style="margin-bottom:24px;">
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">📈 Évolution du CA</h3>
+    </div>
+    <div class="card-body">
+      <canvas id="revenueChart" height="250"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">📊 Aging Report</h3>
+    </div>
+    <div class="card-body">
+      <canvas id="agingChart" height="250"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Top Clients -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-header">
+    <h3 class="card-title">🏆 Top Clients par CA</h3>
+  </div>
+  <div class="card-body">
+    <div id="topClientsContainer">
+      {% for client in top_clients %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="width:28px;height:28px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">{{ loop.index }}</span>
+          <span style="font-weight:600;">{{ client.name }}</span>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-weight:700;color:var(--success);">{{ "{:,.2f}".format(client.revenue) }} MAD</div>
+        </div>
+      </div>
+      {% endfor %}
+      {% if not top_clients %}
+      <p style="text-align:center;padding:20px;color:var(--text-muted);">Aucune donnée disponible</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Monthly Breakdown Table -->
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">📋 Détail mensuel</h3>
+  </div>
+  <div class="card-body" style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Mois</th>
+          <th style="text-align:right;">CA TTC</th>
+          <th style="text-align:right;">Nb factures</th>
+          <th style="text-align:right;">CA moyen/facture</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in monthly %}
+        <tr>
+          <td>{{ m.label }}</td>
+          <td style="text-align:right;font-weight:600;">{{ "{:,.2f}".format(m.revenue) }} MAD</td>
+          <td style="text-align:right;">{{ m.count }}</td>
+          <td style="text-align:right;">{{ "{:,.2f}".format(m.revenue / m.count if m.count > 0 else 0) }} MAD</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+(function(){
+  const monthly = {{ monthly | tojson }};
+  const aging = {{ aging | tojson }};
+
+  // Revenue chart
+  const ctx1 = document.getElementById('revenueChart');
+  if(ctx1){
+    new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: monthly.map(m => m.label),
+        datasets: [{
+          label: 'CA TTC (MAD)',
+          data: monthly.map(m => m.revenue),
+          borderColor: '#c89b3c',
+          backgroundColor: 'rgba(200,155,60,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 4,
+          pointBackgroundColor: '#c89b3c'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('fr-FR') + ' MAD' } }
+        }
+      }
+    });
+  }
+
+  // Aging chart
+  const ctx2 = document.getElementById('agingChart');
+  if(ctx2){
+    new Chart(ctx2, {
+      type: 'doughnut',
+      data: {
+        labels: aging.map(a => a.label),
+        datasets: [{
+          data: aging.map(a => a.value),
+          backgroundColor: ['#27ae60', '#f39c12', '#e74c3c', '#8e44ad']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' }
+        }
+      }
+    });
+  }
+})();
+
+function refreshAnalytics(){ location.reload(); }
+function exportReport(){
+  window.open('/analytics/api/kpis', '_blank');
+}
+</script>
+{% endblock %}

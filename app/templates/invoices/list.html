@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block page_title %}Factures{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Factures</h1>
+  <div class="header-actions">
+    <a href="/invoices/new" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvelle facture
+    </a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <form method="get" class="invoice-filters">
+    <input type="search" name="q" value="{{ q }}" placeholder="N° de facture ou nom du client" aria-label="Rechercher une facture">
+    <select name="status" aria-label="Filtrer par statut">
+      <option value="">Tous les statuts</option>
+      <option value="draft" {{ 'selected' if status == 'draft' else '' }}>Brouillon</option>
+      <option value="validated" {{ 'selected' if status == 'validated' else '' }}>Valid&eacute;</option>
+      <option value="sent" {{ 'selected' if status == 'sent' else '' }}>Envoy&eacute;</option>
+      <option value="archived" {{ 'selected' if status == 'archived' else '' }}>Archiv&eacute;</option>
+      <option value="cancelled" {{ 'selected' if status == 'cancelled' else '' }}>Annul&eacute;</option>
+    </select>
+    <button type="submit" class="btn btn-secondary btn-sm">Filtrer</button>
+    {% if q or status %}<a href="/invoices" class="btn btn-ghost btn-sm">Effacer</a>{% endif %}
+  </form>
+</div>
+
+<form id="bulk-form" method="post" action="/invoices/bulk">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+  <input type="hidden" name="ids" id="bulk-ids" value="">
+  <input type="hidden" name="action" id="bulk-action" value="">
+
+  <div class="bulk-bar" id="bulk-bar">
+    <input type="checkbox" id="select-all" onchange="toggleAll(this)">
+    <span><span class="count" id="selected-count">0</span> s&eacute;lectionn&eacute;e(s)</span>
+    <select id="bulk-select" onchange="if(this.value) document.getElementById('bulk-action').value=this.value; this.form.submit();">
+      <option value="">Action group&eacute;e</option>
+      <option value="validate">Valider</option>
+      <option value="send">Envoyer</option>
+      <option value="archive">Archiver</option>
+      <option value="cancel">Annuler</option>
+    </select>
+  </div>
+
+  {% if invoices %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:2rem"><input type="checkbox" id="select-all-header" aria-label="Tout sélectionner" onchange="toggleAll(this)" class="bulk-checkbox"></th>
+          <th>N&deg;</th>
+          <th>Date</th>
+          <th>Client</th>
+          <th class="num">HT</th>
+          <th class="num">TTC</th>
+          <th>Statut</th>
+          <th>Paiement</th>
+          <th class="ctr"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><input type="checkbox" value="{{ inv.id }}" onchange="updateBulkBar()" class="bulk-checkbox bulk-item"></td>
+          <td><strong>{{ inv.invoice_number or 'Brouillon' }}</strong></td>
+          <td>{{ inv.invoice_date.strftime('%d/%m/%Y') }}</td>
+          <td>{{ clients[inv.client_id].name if clients[inv.client_id] else '-' }}</td>
+          <td class="num">{{ "%.2f"|format(inv.total_ht) }}</td>
+          <td class="num"><strong>{{ "%.2f"|format(inv.total_ttc) }}</strong></td>
+          <td>
+            <span class="status">
+              <span class="status-dot {{ inv.status }}"></span>
+              {{ t('invoice.' + inv.status) if inv.status in ['draft','validated','sent','archived','cancelled'] else inv.status }}
+            </span>
+          </td>
+          <td><span class="status"><span class="status-dot {{ inv.payment_status or 'pending' }}"></span>{{ t('invoice.payment_' + inv.payment_status) if inv.payment_status else 'En attente' }}</span></td>
+          <td class="ctr"><a href="/invoices/{{ inv.id }}" class="btn btn-sm btn-ghost">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if page_obj and page_obj.pages > 1 %}
+  <div class="pagination">
+    {% if page_obj.has_prev %}<a href="?page={{ page_obj.prev_num }}{% if status %}&status={{ status|urlencode }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" aria-label="Page précédente">&laquo;</a>{% endif %}
+    {% for p in page_obj.page_range %}<a href="?page={{ p }}{% if status %}&status={{ status|urlencode }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" class="{{ 'current' if p == page_obj.page else '' }}">{{ p }}</a>{% endfor %}
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_num }}{% if status %}&status={{ status|urlencode }}{% endif %}{% if q %}&q={{ q|urlencode }}{% endif %}" aria-label="Page suivante">&raquo;</a>{% endif %}
+    <span class="text-muted text-sm" style="margin-left:0.5rem">{{ page_obj.total }} total</span>
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="card" style="padding:2.5rem;text-align:center;color:var(--text-muted)">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:0.5rem;opacity:0.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <p>{{ 'Aucune facture ne correspond à votre recherche.' if q or status else 'Aucune facture pour le moment' }}</p>
+    {% if q or status %}<a href="/invoices" class="btn btn-secondary mt-2">Effacer les filtres</a>{% endif %}
+    <a href="/invoices/new" class="btn btn-primary mt-2">Cr&eacute;er une facture</a>
+  </div>
+  {% endif %}
+</form>
+
+<script>
+function toggleAll(source) {
+  document.querySelectorAll('.bulk-item').forEach(function(cb) { cb.checked = source.checked; });
+  document.querySelectorAll('#select-all-header, #select-all').forEach(function(cb) {
+    if (cb !== source) { cb.checked = source.checked; cb.indeterminate = false; }
+  });
+  updateBulkBar();
+}
+function updateBulkBar() {
+  var checked = document.querySelectorAll('.bulk-item:checked');
+  var bar = document.getElementById('bulk-bar');
+  var count = document.getElementById('selected-count');
+  if (checked.length > 0) {
+    bar.classList.add('visible');
+    count.textContent = checked.length;
+  } else {
+    bar.classList.remove('visible');
+  }
+  var header = document.querySelectorAll('#select-all-header, #select-all');
+  var all = document.querySelectorAll('.bulk-item');
+  header.forEach(function(cb) {
+    cb.checked = all.length > 0 && checked.length === all.length;
+    cb.indeterminate = checked.length > 0 && checked.length < all.length;
+  });
+}
+document.getElementById('bulk-form').addEventListener('submit', function(e) {
+  var checked = document.querySelectorAll('.bulk-item:checked');
+  var ids = [];
+  checked.forEach(function(cb) { ids.push(cb.value); });
+  document.getElementById('bulk-ids').value = ids.join(',');
+  if (ids.length === 0) { e.preventDefault(); return; }
+});
+</script>
+{% endblock %}

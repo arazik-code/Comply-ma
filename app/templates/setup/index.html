@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block page_title %}{{ t('nav.setup') }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ t('nav.setup') }}</h1>
+</div>
+
+<div class="card">
+  <h2 class="card-title">Configuration de l'entreprise</h2>
+  <form method="post" action="/setup/company">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Raison sociale *</label>
+        <input type="text" name="company_name" value="{{ company.company_name if company else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label>Ville *</label>
+        <input type="text" name="city" value="{{ company.city if company else '' }}" required>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Adresse *</label>
+      <textarea name="address" required>{{ company.address if company else '' }}</textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>ICE *</label>
+        <input type="text" name="ice" value="{{ company.ice if company else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label>RC *</label>
+        <input type="text" name="rc" value="{{ company.rc if company else '' }}" required>
+      </div>
+      <div class="form-group">
+        <label>I.F. *</label>
+        <input type="text" name="if_number" value="{{ company.if_number if company else '' }}" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>T&eacute;l&eacute;phone</label>
+        <input type="text" name="phone" value="{{ company.phone if company else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ company.email if company else '' }}">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ t('common.save') }}
+      </button>
+    </div>
+  </form>
+  {% if company and company.logo_path %}
+  <div style="margin-top:1rem">
+    <img src="/logo" alt="Logo" style="max-height:80px;border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.25rem;">
+  </div>
+  {% endif %}
+  <form method="post" action="/setup/logo" enctype="multipart/form-data" style="margin-top:1rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Logo de l'entreprise</label>
+        <input type="file" name="logo" accept="image/png,image/jpeg,image/gif">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Uploader le logo
+    </button>
+  </form>
+</div>
+
+<div class="card">
+  <h2 class="card-title">Taux de TVA</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Taux</th><th>{{ t('tva.rate') }}</th><th>Actif</th></tr></thead>
+      <tbody id="tva-rates">
+        {% for rate in tva_rates %}
+        <tr>
+          <td>{{ rate.label }}</td>
+          <td class="num">{{ "%.2f"|format(rate.rate * 100) }}%</td>
+          <td>{% if rate.is_active %}<span class="status"><span class="status-dot validated"></span>Actif</span>{% else %}<span class="status"><span class="status-dot draft"></span>Inactif</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted text-sm" style="margin-top:0.5rem">Les taux de TVA sont configur&eacute;s via la base de donn&eacute;es.</p>
+</div>
+
+<div class="card">
+  <h2 class="card-title">Utilisateurs</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Identifiant</th><th>Nom d'affichage</th><th>R&ocirc;le</th><th class="ctr">Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td><strong>{{ u.username }}</strong></td>
+          <td>{{ u.display_name }}</td>
+          <td>{{ u.role }}</td>
+          <td class="ctr">
+            <form method="post" action="/setup/users/{{ u.id }}/delete" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+              <button type="submit" class="btn btn-sm btn-danger" data-confirm="Supprimer cet utilisateur ?">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="padding:1.5rem;text-align:center;color:var(--text-muted)">Aucun utilisateur</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <details>
+    <summary style="cursor:pointer;font-weight:500;padding:0.5rem 0;color:var(--text-muted)">&plus; Ajouter un utilisateur</summary>
+    <form method="post" action="/setup/users" style="margin-top:0.75rem">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Identifiant *</label>
+          <input type="text" name="username" required>
+        </div>
+        <div class="form-group">
+          <label>Mot de passe *</label>
+          <input type="password" name="password" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom d'affichage *</label>
+          <input type="text" name="display_name" required>
+        </div>
+        <div class="form-group">
+          <label>R&ocirc;le</label>
+          <select name="role">
+            <option value="comptable">Comptable</option>
+            <option value="owner">Propri&eacute;taire</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ t('common.save') }}
+        </button>
+      </div>
+    </form>
+  </details>
+</div>
+{% endblock %}

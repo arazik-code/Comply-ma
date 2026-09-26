@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block page_title %}Importer une facture fournisseur{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Importer une facture fournisseur (UBL 2.1 XML)</h1>
+</div>
+<div class="card" style="max-width:600px">
+  <form method="post" action="/supplier-invoices/upload" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label>Fichier XML UBL 2.1 *</label>
+      <input type="file" name="xml_file" accept=".xml" required>
+      <p class="text-muted text-sm">Le fichier doit être au format UBL 2.1 généré par le fournisseur</p>
+    </div>
+    <div class="form-group">
+      <label>Fournisseur (optionnel — détecté automatiquement via ICE)</label>
+      <select name="supplier_id">
+        <option value="">Détection automatique</option>
+        {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }} ({{ s.ice or '-' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Importer</button>
+      <a href="/supplier-invoices" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

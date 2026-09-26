@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block page_title %}Saisir une facture fournisseur{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Saisir une facture fournisseur</h1>
+</div>
+<div class="card" style="max-width:550px">
+  <form method="post" action="/supplier-invoices/receive">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label>Fournisseur *</label>
+      <select name="supplier_id" required>
+        <option value="">S&eacute;lectionner...</option>
+        {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }} ({{ s.ice or '-' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date *</label>
+        <input type="date" name="invoice_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+      </div>
+      <div class="form-group">
+        <label>N&deg; facture (optionnel)</label>
+        <input type="text" name="invoice_number" placeholder="p. ex. F2025-123">
+      </div>
+    </div>
+    <hr class="form-divider">
+    <h3 style="font-size:0.82rem;margin:0 0 0.75rem 0">Totaux</h3>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Total HT</label>
+        <input type="number" step="0.01" name="total_ht" value="0.00">
+      </div>
+      <div class="form-group">
+        <label>Total TVA</label>
+        <input type="number" step="0.01" name="total_tva" value="0.00">
+      </div>
+      <div class="form-group">
+        <label>Total TTC</label>
+        <input type="number" step="0.01" name="total_ttc" value="0.00">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+      <a href="/supplier-invoices" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

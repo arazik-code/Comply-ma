@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block page_title %}Nouvelle facture{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Nouvelle facture</h1>
+</div>
+
+<div class="card" style="max-width:600px">
+  <form method="post" action="/invoices">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label>Client *</label>
+      <select name="client_id" required>
+        <option value="">S&eacute;lectionner un client</option>
+        {% for c in clients %}
+        <option value="{{ c.id }}">{{ c.name }}{% if c.ice %} &mdash; {{ c.ice }}{% endif %}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Date *</label>
+      <input type="date" name="invoice_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+    </div>
+    <div class="form-group">
+      <label>Notes <span class="text-muted">(optionnel)</span></label>
+      <textarea name="notes" rows="3"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Cr&eacute;er la facture</button>
+      <a href="/invoices" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

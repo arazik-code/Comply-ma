@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block page_title %}Cabinet — {{ client_company.company_name }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>{{ client_company.company_name }}</h3>
+    <a href="/cabinet" class="btn btn-sm btn-ghost">&larr; Retour</a>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin:1rem 0">
+    <div>
+      <div class="stat-label">ICE</div>
+      <div style="font-family:monospace">{{ client_company.ice or '—' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">RC</div>
+      <div>{{ client_company.rc or '—' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">IF</div>
+      <div>{{ client_company.if_number or '—' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Tranche CA</div>
+      <div>{{ client_company.turnover_tier or '—' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">&Eacute;ch&eacute;ance DGI</div>
+      <div>{{ client_company.dgi_deadline or '—' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Statut</div>
+      <div>{{ client_company.status }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Score conformit&eacute;</div>
+      <div><span class="badge {% if client_company.compliance_score >= 90 %}badge-success{% elif client_company.compliance_score >= 75 %}badge-warning{% else %}badge-danger{% endif %}">{{ client_company.compliance_score }} / {{ client_company.compliance_grade }}</span></div>
+    </div>
+    <div>
+      <div class="stat-label">Dernier audit</div>
+      <div>{{ client_company.last_audit_date.strftime('%d/%m/%Y') if client_company.last_audit_date else 'Jamais' }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Factures</div>
+      <div>{{ invoice_count }}</div>
+    </div>
+    <div>
+      <div class="stat-label">Clients</div>
+      <div>{{ client_count }}</div>
+    </div>
+  </div>
+  {% if db_error %}
+  <div class="alert alert-error">{{ db_error }}</div>
+  {% endif %}
+  <form method="post" action="/cabinet/clients/{{ client_company.id }}/audit">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <button type="submit" class="btn btn-primary">Lancer l'audit qualit&eacute;</button>
+  </form>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <div class="card-header"><h3>Isolation des donn&eacute;es</h3></div>
+  <p class="text-muted text-sm">
+    Base de donn&eacute;es d&eacute;di&eacute;e : <code>{{ client_company.db_path }}</code><br>
+    Les factures, clients et pi&egrave;ces de ce client sont stock&eacute;s dans un fichier SQLite isol&eacute;
+    — aucune fuite possible entre clients du cabinet.
+  </p>
+</div>
+{% endblock %}

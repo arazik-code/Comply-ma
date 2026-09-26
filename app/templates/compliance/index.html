@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block page_title %}Conformit&eacute;{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Conformit&eacute;</h1>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="stat-label">Clearance DGI (accept&eacute;)</div>
+    <div class="stat-value">{{ clearance_cleared }}/{{ clearance_total }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <div class="stat-label">Clearance rejet&eacute;</div>
+    <div class="stat-value">{{ clearance_rejected }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div class="stat-label">Clearance en attente</div>
+    <div class="stat-value">{{ clearance_pending }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">TVA par taux</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Taux</th><th class="num">Base HT</th><th class="num">TVA collect&eacute;e</th></tr></thead>
+      <tbody>
+        {% for rate_key, data in tva_by_rate.items() %}
+        <tr>
+          <td>{{ "%.0f"|format(data.rate * 100) }}%</td>
+          <td class="num">{{ "%.2f"|format(data.ht) }}</td>
+          <td class="num">{{ "%.2f"|format(data.tva) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">S&eacute;quences de num&eacute;rotation</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Exercice</th><th>Type</th><th class="num">Dernier num&eacute;ro</th></tr></thead>
+      <tbody>
+        {% for seq in sequences %}
+        <tr>
+          <td>{{ seq.fiscal_year }}</td>
+          <td>{{ seq.sequence_type }}</td>
+          <td class="num">{{ seq.last_number }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3" style="padding:1.5rem;text-align:center;color:var(--text-muted)">Aucune s&eacute;quence</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2 class="card-title">Journal d'audit (20 derni&egrave;res entr&eacute;es)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th>Action</th><th>Type</th><th>ID</th></tr></thead>
+      <tbody>
+        {% for entry in recent_audit %}
+        <tr>
+          <td>{{ entry.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ entry.action }}</td>
+          <td>{{ entry.entity_type }}</td>
+          <td class="text-muted text-sm">{{ entry.entity_id[:8] }}...</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4" style="padding:1.5rem;text-align:center;color:var(--text-muted)">Aucune entr&eacute;e</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

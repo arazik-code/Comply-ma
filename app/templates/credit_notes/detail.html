@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block page_title %}Avoir {{ note.credit_note_number or '(brouillon)' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Avoir <strong>{{ note.credit_note_number or '(brouillon)' }}</strong></h1>
+  <div class="header-actions">
+    {% if not note.is_locked %}
+    <form method="post" action="/credit-notes/{{ note.id }}/validate" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-success">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Valider
+      </button>
+    </form>
+    {% elif note.status == 'validated' %}
+    <form method="post" action="/credit-notes/{{ note.id }}/send" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Envoyer
+      </button>
+    </form>
+    {% endif %}
+    {% if note.status in ('draft', 'validated') %}
+    <form method="post" action="/credit-notes/{{ note.id }}/cancel" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-ghost" data-confirm="Annuler cet avoir ?">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Annuler
+      </button>
+    </form>
+    {% endif %}
+    {% if note.credit_note_number %}
+    <a href="/credit-notes/{{ note.id }}/xml" class="btn btn-outline">XML</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div class="meta-section">
+      <span class="meta-label">&#201;metteur</span>
+      <span class="meta-value" style="font-weight:600">{{ company.company_name if company else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ company.ice if company else '' }}</span>
+    </div>
+    <div class="meta-section" style="text-align:right">
+      <span class="meta-label">Client</span>
+      <span class="meta-value" style="font-weight:600">{{ client.name if client else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ client.ice if client else '' }}</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:2rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+    <div class="meta-section">
+      <span class="meta-label">Date</span>
+      <span class="meta-value">{{ note.credit_note_date.strftime('%d/%m/%Y') }}</span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Statut</span>
+      <span class="meta-value"><span class="status"><span class="status-dot {{ note.status }}"></span>{{ note.status }}</span></span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Motif</span>
+      <span class="meta-value">{{ note.reason }}</span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Facture originale</span>
+      <span class="meta-value">{% if invoice %}<a href="/invoices/{{ invoice.id }}">{{ invoice.invoice_number }}</a>{% else %}-{% endif %}</span>
+    </div>
+    {% if clearance %}
+    <div class="meta-section">
+      <span class="meta-label">Clearance</span>
+      <span class="meta-value">{{ clearance.clearance_number or 'En attente' }}</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if compliance %}
+<div class="compliance-card compliance-grade-{{ compliance.grade|lower }}">
+  <div class="compliance-summary" onclick="this.parentElement.classList.toggle('expanded')">
+    <div class="compliance-score">
+      <span class="grade-badge grade-{{ compliance.grade|lower }}">{{ compliance.grade }}</span>
+      <span class="score-value">{{ compliance.score }}%</span>
+      <span class="score-label">Conformité DGI</span>
+    </div>
+    <div class="compliance-stats">
+      <span class="stat stat-passed">{{ compliance.passed_count }} conforme{{ 's' if compliance.passed_count != 1 else '' }}</span>
+      <span class="stat stat-failed">{{ compliance.failed_count }} erreur{{ 's' if compliance.failed_count != 1 else '' }}</span>
+      {% if compliance.warning_count %}<span class="stat stat-warning">{{ compliance.warning_count }} avertissement{{ 's' if compliance.warning_count != 1 else '' }}</span>{% endif %}
+    </div>
+    <span class="compliance-toggle">▼</span>
+  </div>
+  <div class="compliance-details">
+    {% for check in compliance.checks %}
+    <div class="check-row check-{{ check.severity }}{% if check.passed %}-passed{% endif %}">
+      <span class="check-icon">
+        {% if check.passed %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        {% elif check.severity == 'warning' %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {% else %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        {% endif %}
+      </span>
+      <span class="check-label">{{ check.label }}</span>
+      {% if check.detail %}
+      <span class="check-detail">{{ check.detail }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card" style="padding:0">
+  <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+    <h2 style="font-size:0.88rem;font-weight:600">Lignes de l'avoir</h2>
+  </div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead><tr><th>#</th><th>Description</th><th class="num">Qt&eacute;</th><th class="num">Prix unit.</th><th class="num">TVA</th><th class="num">Total HT</th><th class="num">Total TVA</th><th class="num">Total TTC</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.sort_order }}</td><td>{{ line.description }}</td><td class="num">{{ line.quantity }}</td><td class="num">{{ "%.2f"|format(line.unit_price) }}</td><td class="num">{{ "%.0f"|format(line.tva_rate * 100) }}%</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ht) }}</td><td class="num">{{ "%.2f"|format(line.line_total_tva) }}</td><td class="num">{{ "%.2f"|format(line.line_total_ttc) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="5" class="num"><strong>Totaux</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_ht) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_tva) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_ttc) }}</strong></td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+{% if not note.is_locked %}
+<div class="card">
+  <div class="card-header"><h3>Ajouter une ligne</h3></div>
+  <form method="post" action="/credit-notes/{{ note.id }}/lines">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Description *</label>
+        <input type="text" name="description" required>
+      </div>
+      <div class="form-group">
+        <label>Quantit&eacute; *</label>
+        <input type="number" step="0.001" name="quantity" value="1" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Prix unitaire</label>
+        <input type="number" step="0.01" name="unit_price" value="0.00">
+      </div>
+      <div class="form-group">
+        <label>TVA *</label>
+        <select name="tva_rate">
+          {% for rate in tva_rates %}
+          <option value="{{ rate.rate }}">{{ rate.label }} ({{ "%.0f"|format(rate.rate * 100) }}%)</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+{% endif %}
+
+{% if not note.is_locked and lines|length == 0 %}
+<div class="card">
+  <div class="card-header"><h3>Actions rapides</h3></div>
+  <form method="post" action="/credit-notes/{{ note.id }}/lines-from-invoice" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <button type="submit" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copier les lignes de la facture originale
+    </button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

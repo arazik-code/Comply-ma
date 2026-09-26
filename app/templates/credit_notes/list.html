@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block page_title %}Avoirs{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Avoirs</h1>
+  <div class="header-actions">
+    <a href="/credit-notes/new" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouvel avoir
+    </a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <form method="get">
+    <select name="status" onchange="this.form.submit()" style="padding:0.35rem 0.7rem;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:0.82rem;background:var(--card);color:var(--text)">
+      <option value="">Tous les statuts</option>
+      <option value="draft" {{ 'selected' if status == 'draft' else '' }}>Brouillon</option>
+      <option value="validated" {{ 'selected' if status == 'validated' else '' }}>Valid&eacute;</option>
+      <option value="sent" {{ 'selected' if status == 'sent' else '' }}>Envoy&eacute;</option>
+      <option value="cancelled" {{ 'selected' if status == 'cancelled' else '' }}>Annul&eacute;</option>
+    </select>
+  </form>
+</div>
+
+{% if notes %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>N&deg;</th><th>Date</th><th>Facture orig.</th><th>Client</th><th>Motif</th><th class="num">HT</th><th class="num">TTC</th><th>Statut</th><th class="ctr"></th></tr>
+    </thead>
+    <tbody>
+      {% for n in notes %}
+      <tr>
+        <td><strong>{{ n.credit_note_number or 'Brouillon' }}</strong></td>
+        <td>{{ n.credit_note_date.strftime('%d/%m/%Y') }}</td>
+        <td>{{ invoices[n.original_invoice_id].invoice_number if invoices[n.original_invoice_id] else '-' }}</td>
+        <td>{{ clients[invoices[n.original_invoice_id].client_id].name if invoices[n.original_invoice_id] and clients[invoices[n.original_invoice_id].client_id] else '-' }}</td>
+        <td class="truncate" style="max-width:140px">{{ n.reason[:40] }}{{ '…' if n.reason|length > 40 else '' }}</td>
+        <td class="num">{{ "%.2f"|format(n.total_ht) }}</td>
+        <td class="num"><strong>{{ "%.2f"|format(n.total_ttc) }}</strong></td>
+        <td><span class="status"><span class="status-dot {{ n.status }}"></span>{{ n.status }}</span></td>
+        <td class="ctr"><a href="/credit-notes/{{ n.id }}" class="btn btn-sm btn-ghost">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page_obj and page_obj.pages > 1 %}
+<div class="pagination">
+  {% if page_obj.has_prev %}<a href="?page={{ page_obj.prev_num }}{% if status %}&status={{ status }}{% endif %}">&laquo;</a>{% endif %}
+  {% for p in page_obj.page_range %}<a href="?page={{ p }}{% if status %}&status={{ status }}{% endif %}" class="{{ 'current' if p == page_obj.page else '' }}">{{ p }}</a>{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_num }}{% if status %}&status={{ status }}{% endif %}">&raquo;</a>{% endif %}
+  <span class="text-muted text-sm" style="margin-left:0.5rem">{{ page_obj.total }} total</span>
+</div>
+{% endif %}
+{% else %}
+<div class="card" style="padding:2.5rem;text-align:center;color:var(--text-muted)">
+  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:0.5rem;opacity:0.4"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="12" y2="12"/><line x1="15" y1="15" x2="12" y2="12"/></svg>
+  <p>Aucun avoir pour le moment</p>
+  <a href="/credit-notes/new" class="btn btn-primary mt-2">Cr&eacute;er un avoir</a>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block page_title %}Tableau de bord{% endblock %}
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+    <div class="stat-label">Factures</div>
+    <div class="stat-value">{{ total_count }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div class="stat-label">Chiffre d'affaires</div>
+    <div class="stat-value">{{ "%.2f"|format(total_revenue) }}</div>
+    <div class="stat-sub">MAD</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+    </div>
+    <div class="stat-label">TVA collect&eacute;e</div>
+    <div class="stat-value">{{ "%.2f"|format(total_tva) }}</div>
+    <div class="stat-sub">MAD</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="stat-label">Conformit&eacute; DGI</div>
+    <div class="stat-value" style="color:{% if avg_compliance >= 90 %}var(--success){% elif avg_compliance >= 75 %}var(--warning){% else %}var(--danger){% endif %}">{{ avg_compliance }}%</div>
+    <div class="stat-sub">Score moyen</div>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <div class="chart-card">
+    <h3>R&eacute;partition par statut</h3>
+    <div class="chart-container">
+      <canvas id="donut-chart" width="160" height="160"></canvas>
+      <div>
+        {% for status, count in status_counts %}
+        <div class="flex items-center gap-1" style="margin-bottom:0.35rem">
+          <span class="status-dot {{ status }}"></span>
+          <span style="font-size:0.82rem;color:var(--text-muted)">{{ status }} ({{ count }})</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="chart-card" style="position:relative">
+    <h3>Revenus mensuels (MAD)</h3>
+    <div class="chart-toggle" style="position:absolute;top:1.25rem;right:1.25rem;display:flex;gap:0.25rem">
+      <button class="btn btn-sm btn-ghost chart-mode active" data-mode="ttc" onclick="switchChartMode('ttc')">TTC</button>
+      <button class="btn btn-sm btn-ghost chart-mode" data-mode="ht" onclick="switchChartMode('ht')">HT</button>
+    </div>
+    <canvas id="bar-chart" width="340" height="180"></canvas>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <div class="chart-card">
+    <h3>Pr&eacute;vision TVA &mdash; T{{ current_quarter }}</h3>
+    <div class="insight-value">{{ "%.2f"|format(tva_forecast) }} <span style="font-size:0.9rem;font-weight:400;color:var(--text-muted)">MAD</span></div>
+    <div class="insight-label">TVA collect&eacute;e &agrave; d&eacute;clarer pour le trimestre en cours</div>
+  </div>
+  <div class="chart-card">
+    <h3>Clients les plus actifs</h3>
+    {% if top_clients %}
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      {% for c in top_clients %}
+      <div style="display:flex;align-items:center;justify-content:space-between;font-size:0.82rem">
+        <span style="font-weight:500;color:var(--text)">{{ c.name }}</span>
+        <span style="color:var(--text-muted)">{{ "%.2f"|format(c.total) }} MAD</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted text-sm">Aucune facture valid&eacute;e</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if aging_total > 0 %}
+<div class="card" style="margin-top:0.5rem">
+  <div class="card-header">
+    <h3>&Eacute;ch&eacute;ances clients</h3>
+    <span style="font-size:0.82rem;color:var(--text-muted)">{{ "%.2f"|format(aging_total) }} MAD impay&eacute;s</span>
+  </div>
+  {% for key, label in [('0-30', '0-30 jours'), ('31-60', '31-60 jours'), ('61-90', '61-90 jours'), ('90+', '90+ jours')] %}
+  <div class="aging-row">
+    <span class="aging-label">{{ label }}</span>
+    <div class="aging-bar">
+      <div class="aging-fill {% if key == '90+' %}overdue{% elif key in ('31-60','61-90') %}warning{% endif %}" style="width:{{ aging_pcts[key] }}%"></div>
+    </div>
+    <span class="aging-amount">{{ "%.2f"|format(aging_buckets[key]) }} MAD</span>
+    <span style="font-size:0.75rem;color:var(--text-muted);width:2.5rem;text-align:right">{{ aging_pcts[key] }}%</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="dashboard-grid" style="margin-top:0.5rem">
+  <div class="chart-card">
+    <h3>Activit&eacute; r&eacute;cente</h3>
+    {% if recent_audit %}
+    <div style="font-size:0.82rem">
+      {% for entry in recent_audit %}
+      <div style="padding:0.35rem 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;gap:0.5rem">
+        <span style="color:var(--text-muted);white-space:nowrap">{{ entry.timestamp.strftime('%H:%M') }}</span>
+        <span style="flex:1;color:var(--text)">{{ entry.action }} {{ entry.entity_type }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted text-sm">Aucune activit&eacute; r&eacute;cente</p>
+    {% endif %}
+  </div>
+  <div class="chart-card">
+    <h3>Actions rapides</h3>
+    <div style="display:flex;flex-direction:column;gap:0.5rem">
+      <a href="/invoices/new" class="btn btn-primary" style="justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvelle facture
+      </a>
+      <a href="/clients/new" class="btn btn-outline" style="justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouveau client
+      </a>
+      <a href="/compliance" class="btn btn-outline" style="justify-content:center">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Rapport de conformit&eacute;
+      </a>
+    </div>
+  </div>
+</div>
+
+<small style="display:block;margin-top:1rem;text-align:center;color:var(--text-muted)">Appuyez sur <kbd>N</kbd> pour une nouvelle facture</small>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+(function() {
+  var colors = { draft:'#d1d5db', validated:'#0d9488', sent:'#2563eb', archived:'#d97706', cancelled:'#dc2626' };
+  var donutData = [
+    {% for status, count in status_counts %}
+    { label: '{{ status }}', value: {{ count }}, color: colors['{{ status }}'] || '#d1d5db' },
+    {% endfor %}
+  ];
+  if (document.getElementById('donut-chart')) window.drawDonut('donut-chart', donutData);
+
+  window._barMode = 'ttc';
+  window._barTTC = [{% for v in monthly_revenue %}{{ v }},{% endfor %}];
+  window._barHT = [{% for v in monthly_ht %}{{ v }},{% endfor %}];
+  window._barLabels = [{% for m in monthly_labels %}'{{ m }}',{% endfor %}];
+  window._chartInstance = null;
+
+  function renderBars() {
+    var data = window._barMode === 'ttc' ? window._barTTC : window._barHT;
+    var labels = window._barLabels;
+    var d = [];
+    for (var i = 0; i < labels.length; i++) d.push({ label: labels[i], value: data[i] });
+    if (document.getElementById('bar-chart')) window._chartInstance = window.drawBars('bar-chart', d);
+  }
+  window.switchChartMode = function(mode) {
+    window._barMode = mode;
+    document.querySelectorAll('.chart-mode').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelector('.chart-mode[data-mode="' + mode + '"]').classList.add('active');
+    renderBars();
+  };
+  window._renderDashboardCharts = function() {
+    if (document.getElementById('donut-chart')) window.drawDonut('donut-chart', donutData);
+    renderBars();
+  };
+  renderBars();
+})();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+# COMPLY-MA — dépendances de production (versions épinglées)
+# Régénérer avec : pip freeze après validation en test
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+sqlmodel==0.0.47
+pydantic-settings==2.15.0
+python-multipart==0.0.32
+jinja2==3.1.6
+python-jose[cryptography]==3.5.0
+passlib[bcrypt]==1.7.4
+bcrypt==4.0.1            # pin requis : passlib incompatible avec bcrypt >= 4.1
+weasyprint==70.0
+lxml==6.1.3
+httpx==0.28.1
+aiosqlite==0.22.1
+aiosmtplib==5.1.3
+python-magic==0.4.27
+itsdangerous==2.2.0
+signxml==5.1.0
+python-json-logger==4.2.0
+xhtml2pdf==0.2.20          # repli PDF pur Python (Windows sans GTK)

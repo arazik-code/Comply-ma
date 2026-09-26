@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block page_title %}BR {{ gr.gr_number }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Bon de r&eacute;ception <strong>{{ gr.gr_number }}</strong></h1>
+  <div class="header-actions">
+    {% if gr.status == 'draft' %}
+    <form method="post" action="/goods-receipts/{{ gr.id }}/confirm" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-success">Confirmer la r&eacute;ception</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div class="meta-section">
+      <span class="meta-label">Bon de commande</span>
+      <span class="meta-value" style="font-weight:600">{{ po.po_number if po else '-' }}</span>
+    </div>
+    <div class="meta-section" style="text-align:right">
+      <span class="meta-label">Statut</span>
+      <span class="meta-value"><span class="status"><span class="status-dot {{ gr.status }}"></span>{{ gr.status }}</span></span>
+      <span class="meta-value text-sm">{{ gr.receipt_date.strftime('%d/%m/%Y') }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="padding:0">
+  <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+    <h3 style="font-size:0.88rem;font-weight:600;margin:0">Lignes r&eacute;ceptionn&eacute;es</h3>
+  </div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Description</th><th class="num">Qt&eacute; attendue</th><th class="num">Qt&eacute; re&ccedil;ue</th><th class="num">&Eacute;cart</th><th>&Eacute;tat</th></tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        {% set pl = po_lines[line.po_line_id] %}
+        <tr>
+          <td>{{ line.sort_order }}</td>
+          <td>{{ line.description }}</td>
+          <td class="num">{{ line.quantity_expected }}</td>
+          <td class="num {% if line.quantity_received >= line.quantity_expected %}text-success{% elif line.quantity_received > 0 %}text-warning{% endif %}">{{ line.quantity_received }}</td>
+          <td class="num">{{ (line.quantity_received - line.quantity_expected) }}</td>
+          <td>
+            {% if line.condition == 'good' %}<span class="status"><span class="status-dot cleared"></span>Bon</span>
+            {% elif line.condition == 'damaged' %}<span class="status"><span class="status-dot rejected"></span>Endommag&eacute;</span>
+            {% else %}<span class="status"><span class="status-dot cancelled"></span>Rejet&eacute;</span>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% block page_title %}Facture {{ invoice.invoice_number or '(brouillon)' }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Facture <strong>{{ invoice.invoice_number or '(brouillon)' }}</strong></h1>
+  <div class="header-actions">
+    {% if not invoice.is_locked %}
+    <form method="post" action="/invoices/{{ invoice.id }}/validate" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-success">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Valider
+      </button>
+    </form>
+    {% elif invoice.status == 'validated' %}
+    <form method="post" action="/invoices/{{ invoice.id }}/send" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Envoyer
+      </button>
+    </form>
+    {% endif %}
+    {% if invoice.status in ('draft', 'validated') %}
+    <form method="post" action="/invoices/{{ invoice.id }}/cancel" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-ghost" data-confirm="Annuler cette facture ?">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Annuler
+      </button>
+    </form>
+    {% endif %}
+    {% if invoice.status == 'sent' %}
+    <form method="post" action="/invoices/{{ invoice.id }}/archive" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <button type="submit" class="btn btn-warning">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        Archiver
+      </button>
+    </form>
+    {% endif %}
+    {% if invoice.invoice_number %}
+    <a href="/invoices/{{ invoice.id }}/pdf" class="btn btn-outline">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      PDF
+    </a>
+    <a href="/invoices/{{ invoice.id }}/xml" class="btn btn-outline">XML</a>
+    <button onclick="window.print()" class="btn btn-outline" data-no-spinner>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Imprimer
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="meta-grid">
+    <div class="meta-section">
+      <span class="meta-label">&#201;metteur</span>
+      <span class="meta-value" style="font-weight:600">{{ company.company_name if company else '' }}</span>
+      <span class="meta-value text-sm">{{ company.address if company else '' }}{{ ', ' + company.city if company.city else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ company.ice if company else '' }} &middot; RC {{ company.rc if company else '' }} &middot; IF {{ company.if_number if company else '' }}</span>
+    </div>
+    <div class="meta-section" style="text-align:right">
+      <span class="meta-label">Client</span>
+      <span class="meta-value" style="font-weight:600">{{ client.name if client else '' }}</span>
+      <span class="meta-value text-sm">{{ client.address if client else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ client.ice if client else '' }}</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:2rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+    <div class="meta-section">
+      <span class="meta-label">Date</span>
+      <span class="meta-value">{{ invoice.invoice_date.strftime('%d/%m/%Y') }}</span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Statut</span>
+      <span class="meta-value"><span class="status"><span class="status-dot {{ invoice.status }}"></span>{% if invoice.status in ['draft','validated','sent','archived','cancelled'] %}{{ t('invoice.' + invoice.status) }}{% else %}{{ invoice.status }}{% endif %}</span></span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Paiement</span>
+      <span class="meta-value"><span class="status"><span class="status-dot {{ invoice.payment_status or 'pending' }}"></span>{{ t('invoice.payment_' + invoice.payment_status) if invoice.payment_status else 'En attente' }}</span></span>
+    </div>
+    {% if clearance %}
+    <div class="meta-section">
+      <span class="meta-label">Clearance</span>
+      <span class="meta-value">{{ clearance.clearance_number or 'En attente' }}</span>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="compliance-card compliance-grade-{{ compliance.grade|lower }}">
+  <div class="compliance-summary" onclick="this.parentElement.classList.toggle('expanded')">
+    <div class="compliance-score">
+      <span class="grade-badge grade-{{ compliance.grade|lower }}">{{ compliance.grade }}</span>
+      <span class="score-value">{{ compliance.score }}%</span>
+      <span class="score-label">Conformité DGI</span>
+    </div>
+    <div class="compliance-stats">
+      <span class="stat stat-passed">{{ compliance.passed_count }} conforme{{ 's' if compliance.passed_count != 1 else '' }}</span>
+      <span class="stat stat-failed">{{ compliance.failed_count }} erreur{{ 's' if compliance.failed_count != 1 else '' }}</span>
+      {% if compliance.warning_count %}<span class="stat stat-warning">{{ compliance.warning_count }} avertissement{{ 's' if compliance.warning_count != 1 else '' }}</span>{% endif %}
+    </div>
+    <span class="compliance-toggle">▼</span>
+  </div>
+  <div class="compliance-details">
+    {% for check in compliance.checks %}
+    <div class="check-row check-{{ check.severity }}{% if check.passed %}-passed{% endif %}">
+      <span class="check-icon">
+        {% if check.passed %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        {% elif check.severity == 'warning' %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {% else %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        {% endif %}
+      </span>
+      <span class="check-label">{{ check.label }}</span>
+      {% if check.detail %}
+      <span class="check-detail">{{ check.detail }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" style="padding:0">
+  <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+    <h2 style="font-size:0.88rem;font-weight:600">Lignes de facture</h2>
+  </div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Description</th><th class="num">Qt&eacute;</th><th class="num">Prix unit.</th><th class="num">TVA</th><th class="num">Total HT</th><th class="num">Total TVA</th><th class="num">Total TTC</th></tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.sort_order }}</td>
+          <td>{{ line.description }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ "%.2f"|format(line.unit_price) }}</td>
+          <td class="num">{{ "%.0f"|format(line.tva_rate * 100) }}%</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ht) }}</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_tva) }}</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ttc) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><td colspan="5" class="num"><strong>Totaux</strong></td><td class="num"><strong>{{ "%.2f"|format(invoice.total_ht) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(invoice.total_tva) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(invoice.total_ttc) }}</strong></td></tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+{% if not invoice.is_locked %}
+<div class="card">
+  <div class="card-header"><h3>Ajouter une ligne</h3></div>
+  <form method="post" action="/invoices/{{ invoice.id }}/lines">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Produit</label>
+        <select name="product_id" id="product-select" onchange="fillProduct(this)">
+          <option value="">&mdash; Saisie manuelle &mdash;</option>
+          {% for p in products %}
+          <option value="{{ p.id }}" data-price="{{ "%.2f"|format(p.unit_price) }}" data-rate="{{ p.tva_rate_id }}">{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Description *</label>
+        <input type="text" name="description" id="line-description" required>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Quantit&eacute; *</label>
+        <input type="number" step="0.001" name="quantity" value="1" required>
+      </div>
+      <div class="form-group">
+        <label>Prix unitaire</label>
+        <input type="number" step="0.01" name="unit_price" id="line-price" value="0.00">
+      </div>
+      <div class="form-group">
+        <label>TVA *</label>
+        <select name="tva_rate" id="line-tva">
+          {% for rate in tva_rates %}
+          <option value="{{ rate.rate }}">{{ rate.label }} ({{ "%.0f"|format(rate.rate * 100) }}%)</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+<script>
+function fillProduct(s){var o=s.options[s.selectedIndex],d=document.getElementById('line-description'),p=document.getElementById('line-price');if(o.value){d.value=o.text;p.value=o.dataset.price}}
+</script>
+{% endif %}
+
+{% if invoice.status in ('validated', 'sent', 'archived') %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
+  <div class="card">
+    <div class="card-header"><h3>Email</h3></div>
+    <form method="post" action="/invoices/{{ invoice.id }}/email">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <div class="form-group">
+        <label>Destinataire *</label>
+        <input type="email" name="to" value="{{ client.email if client else '' }}" required>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Envoyer
+      </button>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Paiement</h3></div>
+    <form method="post" action="/invoices/{{ invoice.id }}/payment">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Montant *</label>
+          <input type="number" step="0.01" name="amount" required>
+        </div>
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" name="payment_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mode *</label>
+          <select name="payment_method">
+            <option value="virement">Virement</option>
+            <option value="ch&egrave;que">Ch&egrave;que</option>
+            <option value="esp&egrave;ces">Esp&egrave;ces</option>
+            <option value="carte">Carte bancaire</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>R&eacute;f&eacute;rence</label>
+          <input type="text" name="reference">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Enregistrer</button>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% if payments %}
+<div class="card">
+  <div class="card-header"><h2>Paiements</h2></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Date</th><th class="num">Montant</th><th>Mode</th><th>R&eacute;f&eacute;rence</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr><td>{{ p.payment_date.strftime('%d/%m/%Y') }}</td><td class="num">{{ "%.2f"|format(p.amount) }}</td><td>{{ p.payment_method }}</td><td>{{ p.reference or '-' }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

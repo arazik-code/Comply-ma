@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="{{ request.session.get('lang', 'fr') }}" dir="{{ 'rtl' if request.session.get('lang') == 'ar' else 'ltr' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="COMPLY-MA — Plateforme de facturation électronique conforme DGI Maroc. XML UBL/CII, archivage légal 10 ans, mode cabinet multi-clients, portail client.">
+  <title>COMPLY-MA — Facturation électronique conforme DGI Maroc</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/landing.css">
+</head>
+<body class="lp">
+
+  <!-- ═══ NAV ═══ -->
+  <nav class="lp-nav">
+    <div class="lp-nav-inner">
+      <a href="/" class="lp-logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        COMPLY<b>MA</b>
+      </a>
+      <div class="lp-nav-links">
+        <a href="#features">Fonctionnalités</a>
+        <a href="#how">Conformité</a>
+        <a href="#deadlines">Échéances</a>
+        <a href="#security">Sécurité</a>
+      </div>
+      <div class="lp-nav-cta">
+        {% if user %}
+          <a href="/dashboard" class="lp-btn lp-btn-ghost">Mon espace</a>
+          <a href="/dashboard" class="lp-btn lp-btn-primary">Ouvrir l'application</a>
+        {% else %}
+          <a href="#features" class="lp-btn lp-btn-ghost">Découvrir</a>
+          <a href="/login" class="lp-btn lp-btn-primary">Connexion</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ HERO ═══ -->
+  <header class="lp-hero">
+    <div class="lp-hero-grid">
+      <div>
+        <span class="lp-badge"><span class="dot"></span> Conforme loi de finances marocaine — DGI</span>
+        <h1>La facturation &eacute;lectronique,<br><em>sans mauvaise surprise</em> fiscale.</h1>
+        <p class="lead">
+          COMPLY-MA structure, signe et archive vos factures au format XML légal
+          (UBL 2.1 / CII), contrôle vos calculs de TVA et prépare votre entreprise
+          à l'échéance de la facturation électronique de la DGI.
+        </p>
+        <div class="lp-hero-actions">
+          {% if user %}
+          <a href="/dashboard" class="lp-btn lp-btn-primary lp-btn-lg">
+            Ouvrir mon tableau de bord
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="/invoices/new" class="lp-btn lp-btn-ghost lp-btn-lg">Nouvelle facture</a>
+          {% else %}
+          <a href="/login" class="lp-btn lp-btn-primary lp-btn-lg">
+            Se connecter
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="#features" class="lp-btn lp-btn-ghost lp-btn-lg">Voir les fonctionnalités</a>
+          {% endif %}
+        </div>
+        <p class="lp-hero-note">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Données chiffrées · Archivage 10 ans · Aucune fuite entre clients cabinet
+        </p>
+      </div>
+
+      <div class="lp-hero-visual lp-reveal">
+        <div class="lp-invoice-card">
+          <div class="lp-invoice-head">
+            <div>
+              <div class="co">TEST SARL</div>
+              <div style="font-size:0.75rem;color:var(--lp-muted)">Casablanca · ICE 5555…555</div>
+            </div>
+            <div class="meta">
+              <b>FACTURE F-2026-000001</b><br>
+              15/06/2026<br>
+              <span class="lp-chip ok" style="margin-top:6px">Conforme DGI</span>
+            </div>
+          </div>
+          <table class="lp-invoice-table">
+            <thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">Montant HT</th></tr></thead>
+            <tbody>
+              <tr><td>Ordinateur portable Dell</td><td class="num">2</td><td class="num">17 000,00</td></tr>
+              <tr><td>Clavier mécanique</td><td class="num">3</td><td class="num">1 050,00</td></tr>
+              <tr><td>Conseil (5 jours)</td><td class="num">5</td><td class="num">12 500,00</td></tr>
+            </tbody>
+          </table>
+          <div class="lp-invoice-total">
+            <span class="lbl">Total TTC · TVA 20 % / 14 %</span>
+            <span class="amt">36 597,00 MAD</span>
+          </div>
+          <div class="lp-invoice-watermark">Copie visuelle — l'original est le fichier XML signé</div>
+        </div>
+        <div class="lp-float-card">
+          <div>
+            <span class="num">97</span>
+            <small>Score conformité moyen</small>
+          </div>
+          <div>
+            <span class="num">10 ans</span>
+            <small>Rétention légale</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══ TRUST BAR ═══ -->
+  <section class="lp-trust">
+    <div class="lp-trust-inner">
+      <div class="lp-trust-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <div><b>UBL 2.1 &amp; CII</b><span>Formats XML légaux DGI</span></div>
+      </div>
+      <div class="lp-trust-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div><b>Signature XML-DSig</b><span>Certificat PKCS#12 (Barid e-Sign)</span></div>
+      </div>
+      <div class="lp-trust-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div><b>Mode cabinet</b><span>1 fiduciaire, N entreprises isolées</span></div>
+      </div>
+      <div class="lp-trust-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div><b>Échéances DGI</b><span>Suivi par tranche de CA</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ FEATURES ═══ -->
+  <section class="lp-section" id="features">
+    <div class="lp-wrap lp-center">
+      <span class="lp-kicker">Fonctionnalités</span>
+      <h2 class="lp-h2">Tout ce qu'exige la conformité — rien de moins</h2>
+      <p class="lp-sub">De la saisie de la facture à son archivage probant, chaque étape du cycle de vie est outillée, contrôlée et tracée.</p>
+    </div>
+    <div class="lp-wrap">
+      <div class="lp-features">
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <h3>Qualité de données DGI</h3>
+          <p>Validation ICE (clé modulo-97), détection des lacunes de numérotation séquentielle, contrôle des calculs TVA à 0/7/10/14/20&nbsp;% — avant que la DGI ne les trouve.</p>
+        </div>
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+          </div>
+          <h3>XML légal signé</h3>
+          <p>Génération UBL 2.1 et CII, signature XML-DSig avec votre certificat PKCS#12. Le PDF n'est qu'une copie visuelle : l'original probant est le XML signé, horodaté.</p>
+        </div>
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+          </div>
+          <h3>Archivage légal 10 ans</h3>
+          <p>Archives ZIP avec chaîne de hachage SHA-256, horodatage RFC 3161 et rétention conforme à la loi marocaine. Restitution à tout moment, preuve à l'appui.</p>
+        </div>
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <h3>Échéances &amp; TVA</h3>
+          <p>Prévision de TVA collectée par trimestre, calendrier des échéances DGI par tranche de chiffre d'affaires, journal d'audit complet de chaque opération.</p>
+        </div>
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          </div>
+          <h3>Achats &amp; rapprochement</h3>
+          <p>Bons de commande, factures fournisseurs importées en XML (parsing anti-XXE) et rapprochement 3 voies avec les bons de réception.</p>
+        </div>
+        <div class="lp-feature lp-reveal">
+          <div class="lp-feature-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <h3>Portail client &amp; email</h3>
+          <p>Vos clients consultent leurs factures et avoirs sur un portail dédié, reçoivent PDF + XML par email, sans jamais toucher à votre espace interne.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ HOW / CONFORMITE ═══ -->
+  <section class="lp-section alt" id="how">
+    <div class="lp-wrap lp-center">
+      <span class="lp-kicker">Conformité en 3 étapes</span>
+      <h2 class="lp-h2">De la saisie à la preuve, en un flux maîtrisé</h2>
+      <p class="lp-sub">Une machine à états stricte : aucune facture ne peut sauter une étape ni disparaître du circuit légal.</p>
+    </div>
+    <div class="lp-wrap">
+      <div class="lp-steps">
+        <div class="lp-step lp-reveal">
+          <div class="lp-step-num">1</div>
+          <h3>Saisir &amp; contrôler</h3>
+          <p>Création de la facture, lignes produits, taux de TVA réglementaires. Le moteur de qualité vérifie ICE, numérotation et totaux en temps réel.</p>
+        </div>
+        <div class="lp-step lp-reveal">
+          <div class="lp-step-num">2</div>
+          <h3>Valider &amp; signer</h3>
+          <p>La validation gèle la facture, génère le XML UBL/CII, le signe numériquement et le soumet au circuit de clearance DGI (dès l'ouverture de l'API).</p>
+        </div>
+        <div class="lp-step lp-reveal">
+          <div class="lp-step-num">3</div>
+          <h3>Envoyer &amp; archiver</h3>
+          <p>Envoi au client (portail + email PDF/XML), puis archivage ZIP horodaté avec chaîne de hachage. Rétention 10 ans, restitution prête pour contrôle.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DEADLINES ═══ -->
+  <section class="lp-section" id="deadlines">
+    <div class="lp-wrap lp-center">
+      <span class="lp-kicker">Calendrier légal</span>
+      <h2 class="lp-h2">Les échéances DGI par tranche de chiffre d'affaires</h2>
+      <p class="lp-sub">La facturation électronique devient obligatoire progressivement. COMPLY-MA affiche l'échéance de chaque entreprise selon sa tranche.</p>
+    </div>
+    <div class="lp-wrap">
+      <table class="lp-deadlines lp-reveal">
+        <thead>
+          <tr><th>Tranche</th><th>Description</th><th>Échéance</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Grandes entreprises</td>
+            <td style="color:var(--lp-muted)">Chiffre d'affaires ≥ 100 M MAD</td>
+            <td class="when">Juillet 2026</td>
+          </tr>
+          <tr>
+            <td>PME</td>
+            <td style="color:var(--lp-muted)">Chiffre d'affaires ≥ 500 K MAD</td>
+            <td class="when">Janvier 2027</td>
+          </tr>
+          <tr>
+            <td>TPE / Auto-entrepreneurs</td>
+            <td style="color:var(--lp-muted)">En attente de publication DGI</td>
+            <td class="tbd">À confirmer</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ SECURITY ═══ -->
+  <section class="lp-section alt" id="security">
+    <div class="lp-wrap">
+      <div class="lp-security">
+        <div>
+          <span class="lp-kicker">Sécurité</span>
+          <h2 class="lp-h2">Conçu pour les données fiscales les plus sensibles</h2>
+          <p class="lp-sub" style="margin-bottom:28px">Chaque couche de l'application applique le principe de moindre confiance — du formulaire au fichier XML signé.</p>
+          <a href="/login" class="lp-btn lp-btn-primary lp-btn-lg">Accéder à l'application</a>
+        </div>
+        <div class="lp-security-list">
+          <div class="lp-security-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div><b>Protection CSRF totale</b><span>Tous les formulaires vérifient un token de session — aucune action falsifiable depuis un site tiers.</span></div>
+          </div>
+          <div class="lp-security-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div><b>En-têtes HTTP durcis</b><span>CSP stricte, anti-clickjacking, anti-sniffing. Cookies SameSite, option Secure/TLS.</span></div>
+          </div>
+          <div class="lp-security-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <div><b>Rate limiting des connexions</b><span>Verrouillage automatique après tentatives répétées — contre les attaques par force brute.</span></div>
+          </div>
+          <div class="lp-security-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <div><b>Isolation multi-clients</b><span>Mode cabinet : chaque entreprise a sa propre base de données — zéro fuite inter-clients.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="lp-cta">
+    <div class="lp-cta-inner">
+      <h2>Prêt pour l'échéance DGI&nbsp;?</h2>
+      <p>Structurez vos factures, signez vos XML et archivez l'esprit tranquille — bien avant la date limite de votre tranche.</p>
+      {% if user %}
+      <a href="/dashboard" class="lp-btn lp-btn-primary lp-btn-lg">Ouvrir mon tableau de bord</a>
+      {% else %}
+      <a href="/login" class="lp-btn lp-btn-primary lp-btn-lg">Se connecter maintenant</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- ═══ FOOTER ═══ -->
+  <footer class="lp-footer">
+    <div class="lp-footer-inner">
+      <div>
+        <a href="/" class="lp-logo" style="color:#fff">COMPLY<b>MA</b></a>
+      </div>
+      <div style="display:flex;gap:22px">
+        <a href="#features">Fonctionnalités</a>
+        <a href="#deadlines">Échéances</a>
+        <a href="#security">Sécurité</a>
+        <a href="/login">Connexion</a>
+      </div>
+      <div class="legal">
+        Outil de structuration et d'archivage. Ne constitue pas un conseil comptable ou fiscal.
+        Validation par un expert-comptable requise. Échéances DGI indicatives — se référer aux
+        publications officielles de la Direction Générale des Impôts.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll reveal léger, respectueux de prefers-reduced-motion
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('.lp-reveal').forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+        });
+      }, { threshold: 0.15 });
+      document.querySelectorAll('.lp-reveal').forEach(function (el) { io.observe(el); });
+    })();
+  </script>
+</body>
+</html>

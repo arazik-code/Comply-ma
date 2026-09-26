@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block page_title %}Factures fournisseurs{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Factures fournisseurs</h1>
+  <div class="header-actions">
+    <a href="/supplier-invoices/receive-form" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Saisir une facture
+    </a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <form method="get">
+    <select name="status" onchange="this.form.submit()">
+      <option value="">Tous les statuts</option>
+      <option value="received" {{ 'selected' if status == 'received' else '' }}>Re&ccedil;ue</option>
+      <option value="approved" {{ 'selected' if status == 'approved' else '' }}>Approuv&eacute;e</option>
+      <option value="rejected" {{ 'selected' if status == 'rejected' else '' }}>Rejet&eacute;e</option>
+    </select>
+  </form>
+</div>
+
+{% if page_obj.items %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>N&deg; Facture</th><th>Fournisseur</th><th>Date</th><th class="num">Total TTC</th><th>Statut</th><th>Rapprochement</th><th class="ctr"></th></tr></thead>
+    <tbody>
+      {% for inv in page_obj.items %}
+      <tr>
+        <td><strong>{{ inv.invoice_number or '(sans num)' }}</strong></td>
+        <td>{{ suppliers[inv.client_id].name if suppliers[inv.client_id] else '-' }}</td>
+        <td>{{ inv.invoice_date.strftime('%d/%m/%Y') }}</td>
+        <td class="num">{{ "%.2f"|format(inv.total_ttc) }} MAD</td>
+        <td><span class="status"><span class="status-dot {{ inv.status }}"></span>{{ inv.status }}</span></td>
+        <td>{% if inv.po_id %}<span class="status"><span class="status-dot sent"></span>Rapproch&eacute;</span>{% else %}<span class="text-muted">-</span>{% endif %}</td>
+        <td class="ctr"><a href="/supplier-invoices/{{ inv.id }}" class="btn btn-sm btn-ghost">Voir</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page_obj.pages > 1 %}
+<div class="pagination">
+  {% if page_obj.has_prev %}<a href="?page={{ page_obj.prev_num }}{% if status %}&status={{ status }}{% endif %}">&laquo;</a>{% endif %}
+  {% for p in page_obj.page_range %}<a href="?page={{ p }}{% if status %}&status={{ status }}{% endif %}" class="{{ 'current' if p == page_obj.page else '' }}">{{ p }}</a>{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_num }}{% if status %}&status={{ status }}{% endif %}">&raquo;</a>{% endif %}
+  <span class="text-muted text-sm" style="margin-left:0.5rem">{{ page_obj.total }} total</span>
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state"><p>Aucune facture fournisseur</p></div>
+{% endif %}
+{% endblock %}

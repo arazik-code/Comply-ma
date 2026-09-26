@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block page_title %}Cabinet — &Eacute;ch&eacute;ances DGI{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>&Eacute;ch&eacute;ances de facturation &eacute;lectronique DGI</h3>
+    <a href="/cabinet" class="btn btn-sm btn-ghost">&larr; Retour</a>
+  </div>
+  <p class="text-muted text-sm" style="margin:0.75rem 0">
+    Calendrier l&eacute;gal par tranche de chiffre d'affaires (loi de finances marocaine).
+  </p>
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Tranche</th><th>Description</th><th>&Eacute;ch&eacute;ance</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for key, d in deadlines.items() %}
+        <tr>
+          <td style="font-weight:500">{{ d.label }}</td>
+          <td class="text-muted text-sm">{{ d.description }}</td>
+          <td>{{ d.deadline }}</td>
+          <td>{{ d.deadline_date or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-muted text-sm" style="margin-top:1rem">
+    <strong>Avertissement :</strong> outil de structuration et d'archivage. Ne constitue pas un conseil
+    comptable ou fiscal. Validation par un expert-comptable requise.
+  </p>
+</div>
+{% endblock %}

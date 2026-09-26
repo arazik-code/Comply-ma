@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  comply-ma:
+    build: .
+    container_name: comply-ma
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - COMPLY_MA_DATABASE_URL=sqlite:///./data/comply-ma.db
+      # SECRET_KEY doit être défini dans .env — l'app refuse de démarrer sans.
+      - COMPLY_MA_SECRET_KEY=${COMPLY_MA_SECRET_KEY:?COMPLY_MA_SECRET_KEY manquant dans .env}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3

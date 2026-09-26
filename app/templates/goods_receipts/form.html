@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_title %}Nouveau bon de r&eacute;ception{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Nouveau bon de r&eacute;ception</h1>
+</div>
+<div class="card" style="max-width:600px">
+  <form method="post" action="/goods-receipts">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label>Bon de commande *</label>
+      <select name="po_id" required>
+        <option value="">S&eacute;lectionner un BC...</option>
+        {% for po in pos %}
+        <option value="{{ po.id }}" {{ 'selected' if selected_po == po.id else '' }}>{{ po.po_number }} — {{ po.supplier_id }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date de r&eacute;ception *</label>
+        <input type="date" name="receipt_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+      </div>
+      <div class="form-group">
+        <label>Re&ccedil;u par</label>
+        <input type="text" name="received_by" placeholder="Nom du r&eacute;ceptionnaire">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea name="notes" rows="3"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Cr&eacute;er le BR</button>
+      <a href="/goods-receipts" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

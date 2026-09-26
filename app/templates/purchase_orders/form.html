@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block page_title %}Nouveau bon de commande{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Nouveau bon de commande</h1>
+</div>
+<div class="card" style="max-width:600px">
+  <form method="post" action="/purchase-orders">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label>Fournisseur *</label>
+      <select name="supplier_id" required>
+        <option value="">S&eacute;lectionner...</option>
+        {% for s in suppliers %}
+        <option value="{{ s.id }}">{{ s.name }} ({{ s.ice or '-' }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date d'&eacute;mission *</label>
+        <input type="date" name="issue_date" value="{{ now().strftime('%Y-%m-%d') }}" required>
+      </div>
+      <div class="form-group">
+        <label>Date de livraison pr&eacute;vue</label>
+        <input type="date" name="expected_date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Notes</label>
+      <textarea name="notes" rows="3"></textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Cr&eacute;er le BC</button>
+      <a href="/purchase-orders" class="btn btn-secondary">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block page_title %}Cabinet — Configuration{% endblock %}
+{% block content %}
+<div class="card" style="max-width:640px;margin:2rem auto">
+  <div class="card-header">
+    <h3>Cr&eacute;er votre cabinet</h3>
+  </div>
+  <p class="text-muted text-sm" style="margin:0.75rem 0">
+    Le cabinet (fiduciaire) g&egrave;re plusieurs entreprises clientes.
+    Chaque client obtient sa propre base de donn&eacute;es isol&eacute;e.
+  </p>
+  <form method="post" action="/cabinet/setup">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label for="name">Nom du cabinet *</label>
+      <input id="name" name="name" required placeholder="Cabinet Benali &amp; Associ&eacute;s">
+    </div>
+    <div class="form-group">
+      <label for="ice">ICE</label>
+      <input id="ice" name="ice" maxlength="15" placeholder="15 chiffres">
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" placeholder="contact@cabinet.ma">
+    </div>
+    <div class="form-group">
+      <label for="brand_name">Nom commercial (white-label)</label>
+      <input id="brand_name" name="brand_name" placeholder="Benali Compta">
+    </div>
+    <button type="submit" class="btn btn-primary">Cr&eacute;er le cabinet</button>
+  </form>
+</div>
+{% endblock %}

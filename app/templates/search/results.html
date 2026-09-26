@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block page_title %}Recherche{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Recherche</h1>
+  <span style="font-size:0.82rem;color:var(--text-muted)">{{ total }} r&eacute;sultat{{ 's' if total != 1 else '' }} pour <strong>{{ q }}</strong></span>
+</div>
+
+{% if total == 0 %}
+<div class="empty-state">
+  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  <p>Aucun r&eacute;sultat pour <strong>{{ q }}</strong></p>
+</div>
+{% endif %}
+
+{% if invoices %}
+<div class="card" style="margin-top:1rem">
+  <div class="card-header"><h3>Factures ({{ invoices|length }})</h3></div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead><tr><th>Num&eacute;ro</th><th>Date</th><th>Total TTC</th><th>Statut</th><th class="ctr"></th></tr></thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><strong>{{ inv.invoice_number }}</strong></td>
+          <td>{{ inv.invoice_date.strftime('%d/%m/%Y') }}</td>
+          <td class="num">{{ "%.2f"|format(inv.total_ttc) }} MAD</td>
+          <td><span class="status"><span class="status-dot {{ inv.status }}"></span>{{ inv.status }}</span></td>
+          <td class="ctr"><a href="/invoices/{{ inv.id }}" class="btn btn-sm btn-ghost">Voir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if clients %}
+<div class="card" style="margin-top:1rem">
+  <div class="card-header"><h3>Clients ({{ clients|length }})</h3></div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead><tr><th>Nom</th><th>ICE</th><th>Ville</th><th class="ctr"></th></tr></thead>
+      <tbody>
+        {% for c in clients %}
+        <tr>
+          <td><strong>{{ c.name }}</strong></td>
+          <td>{{ c.ice or '-' }}</td>
+          <td>{{ c.city or '-' }}</td>
+          <td class="ctr"><a href="/clients/{{ c.id }}/edit" class="btn btn-sm btn-ghost">Voir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if products %}
+<div class="card" style="margin-top:1rem">
+  <div class="card-header"><h3>Produits ({{ products|length }})</h3></div>
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead><tr><th>Nom</th><th class="num">Prix unitaire</th><th class="ctr"></th></tr></thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td><strong>{{ p.name }}</strong></td>
+          <td class="num">{{ "%.2f"|format(p.unit_price) }} MAD</td>
+          <td class="ctr"><a href="/products/{{ p.id }}/edit" class="btn btn-sm btn-ghost">Voir</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Avoir {{ note.credit_note_number }} — Portail client</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="portal-body">
+  <header class="portal-header">
+    <h1><span>{{ company.company_name if company else 'Portail' }}</span> &mdash; Avoir {{ note.credit_note_number }}</h1>
+    <div style="display:flex;align-items:center;gap:0.75rem">
+      <a href="/portal/credit-notes" class="btn btn-outline" style="font-size:0.8rem;padding:0.3rem 0.8rem">&larr; Retour</a>
+      <a href="/portal/logout" class="btn btn-ghost" style="font-size:0.8rem;padding:0.3rem 0.8rem">Déconnexion</a>
+    </div>
+  </header>
+  <main class="portal-content">
+    <div class="card">
+      <div class="meta-grid">
+        <div class="meta-section">
+          <span class="meta-label">Émetteur</span>
+          <span class="meta-value" style="font-weight:600">{{ company.company_name if company else '' }}</span>
+          <span class="meta-value text-sm">{{ company.address if company else '' }}{{ ', ' + company.city if company.city else '' }}</span>
+          <span class="meta-value text-sm">ICE {{ company.ice if company else '' }} &middot; RC {{ company.rc if company else '' }}</span>
+        </div>
+        <div class="meta-section" style="text-align:right">
+          <span class="meta-label">Client</span>
+          <span class="meta-value" style="font-weight:600">{{ client.name if client else '' }}</span>
+          <span class="meta-value text-sm">ICE {{ client.ice if client else '' }}</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:2rem;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+        <div class="meta-section">
+          <span class="meta-label">Date</span>
+          <span class="meta-value">{{ note.issue_date.strftime('%d/%m/%Y') }}</span>
+        </div>
+        <div class="meta-section">
+          <span class="meta-label">Motif</span>
+          <span class="meta-value">{{ note.reason }}</span>
+        </div>
+        <div class="meta-section">
+          <span class="meta-label">Statut</span>
+          <span class="meta-value"><span class="status"><span class="status-dot {{ note.status }}"></span>{{ note.status }}</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="padding:0">
+      <div class="table-wrap" style="border:none">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Description</th><th class="num">Qté</th><th class="num">Prix unit.</th><th class="num">TVA</th><th class="num">Total HT</th><th class="num">Total TVA</th><th class="num">Total TTC</th></tr>
+          </thead>
+          <tbody>
+            {% for line in lines %}
+            <tr>
+              <td>{{ line.sort_order }}</td>
+              <td>{{ line.description }}</td>
+              <td class="num">{{ line.quantity }}</td>
+              <td class="num">{{ "%.2f"|format(line.unit_price) }}</td>
+              <td class="num">{{ "%.0f"|format(line.tva_rate * 100) }}%</td>
+              <td class="num">{{ "%.2f"|format(line.line_total_ht) }}</td>
+              <td class="num">{{ "%.2f"|format(line.line_total_tva) }}</td>
+              <td class="num">{{ "%.2f"|format(line.line_total_ttc) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr><td colspan="5" class="num"><strong>Totaux</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_ht) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_tva) }}</strong></td><td class="num"><strong>{{ "%.2f"|format(note.total_ttc) }}</strong></td></tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </main>
+  <footer class="portal-footer">
+    {{ company.company_name if company else '' }} &mdash; ICE {{ company.ice if company else '' }}
+  </footer>
+</body>
+</html>

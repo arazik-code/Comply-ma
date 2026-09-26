@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block page_title %}Facture fournisseur{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Facture fournisseur <strong>{{ invoice.invoice_number or '(sans num)' }}</strong></h1>
+</div>
+
+{% if match_result %}
+<div class="compliance-card compliance-grade-{% if match_result.overall_status == 'full' %}a{% elif match_result.overall_status == 'partial' %}b{% else %}c{% endif %}">
+  <div class="compliance-summary" onclick="this.parentElement.classList.toggle('expanded')">
+    <div class="compliance-score">
+      <span class="grade-badge grade-{% if match_result.overall_status == 'full' %}a{% elif match_result.overall_status == 'partial' %}b{% else %}c{% endif %}">
+        {% if match_result.overall_status == 'full' %}3V{% elif match_result.overall_status == 'partial' %}2V{% else %}1V{% endif %}
+      </span>
+      <span class="score-value">BC {{ match_result.po_number }}</span>
+      <span class="score-label">Rapprochement 3 voies</span>
+    </div>
+    <div class="compliance-stats">
+      <span class="stat stat-passed">{{ match_result.line_matches|length }} ligne(s) rapproch&eacute;e(s)</span>
+      <span class="stat {% if match_result.overall_status == 'full' %}stat-passed{% else %}stat-warning{% endif %}">{{ match_result.overall_status }}</span>
+    </div>
+    <span class="compliance-toggle">▼</span>
+  </div>
+  <div class="compliance-details">
+    {% for m in match_result.line_matches %}
+    <div class="check-row {% if m.qty_match and m.price_match %}check-error-passed{% else %}check-error{% endif %}">
+      <span class="check-icon">
+        {% if m.qty_match and m.price_match %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        {% else %}
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {% endif %}
+      </span>
+      <span class="check-label">{{ m.invoice_description }}</span>
+      <span class="check-detail">
+        Qt&eacute;: {{ m.qty_invoiced }}/{{ m.qty_ordered }}
+        &middot; Prix: {{ "%.2f"|format(m.price_invoiced) }}/{{ "%.2f"|format(m.price_ordered) }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="meta-grid">
+    <div class="meta-section">
+      <span class="meta-label">Fournisseur</span>
+      <span class="meta-value" style="font-weight:600">{{ supplier.name if supplier else '' }}</span>
+      <span class="meta-value text-sm">ICE {{ supplier.ice if supplier else '' }}</span>
+    </div>
+    <div class="meta-section" style="text-align:right">
+      <span class="meta-label">Date</span>
+      <span class="meta-value">{{ invoice.invoice_date.strftime('%d/%m/%Y') }}</span>
+      <span class="meta-value text-sm">Statut: {{ invoice.status }}</span>
+    </div>
+  </div>
+  <div class="meta-grid" style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+    <div class="meta-section">
+      <span class="meta-label">Total HT</span>
+      <span class="meta-value">{{ "%.2f"|format(invoice.total_ht) }} MAD</span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Total TVA</span>
+      <span class="meta-value">{{ "%.2f"|format(invoice.total_tva) }} MAD</span>
+    </div>
+    <div class="meta-section">
+      <span class="meta-label">Total TTC</span>
+      <span class="meta-value" style="font-weight:700">{{ "%.2f"|format(invoice.total_ttc) }} MAD</span>
+    </div>
+  </div>
+</div>
+
+{% if lines %}
+<div class="card" style="padding:0">
+  <div class="table-wrap" style="border:none">
+    <table>
+      <thead><tr><th>#</th><th>Description</th><th class="num">Qt&eacute;</th><th class="num">Prix unit.</th><th class="num">TVA</th><th class="num">Total HT</th></tr></thead>
+      <tbody>
+        {% for line in lines %}
+        <tr>
+          <td>{{ line.sort_order }}</td>
+          <td>{{ line.description }}</td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">{{ "%.2f"|format(line.unit_price) }}</td>
+          <td class="num">{{ "%.0f"|format(line.tva_rate * 100) }}%</td>
+          <td class="num">{{ "%.2f"|format(line.line_total_ht) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

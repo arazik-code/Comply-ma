@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes avoirs — Portail client</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="portal-body">
+  <header class="portal-header">
+    <h1><span>{{ company.company_name if company else 'Portail' }}</span> &mdash; Mes documents</h1>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <span style="font-size:0.82rem;color:var(--text-muted)">{{ client.name }}</span>
+      <a href="/portal/invoices" class="btn btn-outline" style="font-size:0.8rem;padding:0.3rem 0.8rem">Factures</a>
+      <a href="/portal/logout" class="btn btn-ghost" style="font-size:0.8rem;padding:0.3rem 0.8rem">Déconnexion</a>
+    </div>
+  </header>
+  <main class="portal-content">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+      <h2 style="font-size:1.1rem;font-weight:600;color:var(--text)">Mes avoirs</h2>
+      <span style="font-size:0.82rem;color:var(--text-muted)">{{ notes|length }} avoir{{ 's' if notes|length != 1 else '' }}</span>
+    </div>
+    {% if notes %}
+    <div class="card" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Numéro</th><th>Date</th><th>Montant TTC</th><th>Motif</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for note in notes %}
+            <tr>
+              <td><strong>{{ note.credit_note_number or '(brouillon)' }}</strong></td>
+              <td>{{ note.issue_date.strftime('%d/%m/%Y') }}</td>
+              <td class="num">{{ "%.2f"|format(note.total_ttc) }} MAD</td>
+              <td>{{ note.reason or '-' }}</td>
+              <td style="text-align:right">
+                <a href="/portal/credit-notes/{{ note.id }}" class="btn btn-outline" style="font-size:0.78rem;padding:0.25rem 0.6rem">Voir</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <p>Aucun avoir pour le moment.</p>
+    </div>
+    {% endif %}
+  </main>
+  <footer class="portal-footer">
+    {{ company.company_name if company else '' }} &mdash; ICE {{ company.ice if company else '' }}
+  </footer>
+</body>
+</html>

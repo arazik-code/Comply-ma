@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block page_title %}Bons de commande{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Bons de commande</h1>
+  <div class="header-actions">
+    <a href="/purchase-orders/new" class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nouveau BC
+    </a>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <form method="get">
+    <select name="status" onchange="this.form.submit()">
+      <option value="">Tous les statuts</option>
+      <option value="draft" {{ 'selected' if status == 'draft' else '' }}>Brouillon</option>
+      <option value="sent" {{ 'selected' if status == 'sent' else '' }}>Envoy&eacute;</option>
+      <option value="partially_received" {{ 'selected' if status == 'partially_received' else '' }}>Partiellement re&ccedil;u</option>
+      <option value="fully_received" {{ 'selected' if status == 'fully_received' else '' }}>Totalement re&ccedil;u</option>
+      <option value="cancelled" {{ 'selected' if status == 'cancelled' else '' }}>Annul&eacute;</option>
+    </select>
+  </form>
+</div>
+
+{% if page_obj.items %}
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>N° BC</th><th>Fournisseur</th><th>Date</th><th class="num">Total TTC</th><th>Statut</th><th class="ctr"></th></tr></thead>
+    <tbody>
+      {% for po in page_obj.items %}
+      <tr>
+        <td><strong>{{ po.po_number }}</strong></td>
+        <td>{{ suppliers[po.supplier_id].name if suppliers[po.supplier_id] else '-' }}</td>
+        <td>{{ po.issue_date.strftime('%d/%m/%Y') }}</td>
+        <td class="num">{{ "%.2f"|format(po.total_ttc) }}</td>
+        <td><span class="status"><span class="status-dot {{ po.status }}"></span>{{ po.status }}</span></td>
+        <td class="ctr"><a href="/purchase-orders/{{ po.id }}" class="btn btn-sm btn-ghost">Voir</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page_obj.pages > 1 %}
+<div class="pagination">
+  {% if page_obj.has_prev %}<a href="?page={{ page_obj.prev_num }}{% if status %}&status={{ status }}{% endif %}">&laquo;</a>{% endif %}
+  {% for p in page_obj.page_range %}<a href="?page={{ p }}{% if status %}&status={{ status }}{% endif %}" class="{{ 'current' if p == page_obj.page else '' }}">{{ p }}</a>{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_num }}{% if status %}&status={{ status }}{% endif %}">&raquo;</a>{% endif %}
+  <span class="text-muted text-sm" style="margin-left:0.5rem">{{ page_obj.total }} total</span>
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state"><p>Aucun bon de commande</p></div>
+{% endif %}
+{% endblock %}

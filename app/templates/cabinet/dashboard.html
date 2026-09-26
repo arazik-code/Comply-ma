@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block page_title %}Cabinet — Tableau de bord{% endblock %}
+{% block content %}
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="stat-label">Clients</div>
+    <div class="stat-value">{{ stats.total_clients }}</div>
+    <div class="stat-sub">{{ stats.active_clients }} actifs</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="stat-label">Pr&ecirc;ts DGI</div>
+    <div class="stat-value" style="color:var(--success)">{{ stats.ready_for_dgi }}</div>
+    <div class="stat-sub">Score &ge; 90</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <div class="stat-label">Avec anomalies</div>
+    <div class="stat-value" style="color:var(--warning)">{{ stats.with_issues }}</div>
+    <div class="stat-sub">Score &lt; 75</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <div class="stat-label">Conformit&eacute; moyenne</div>
+    <div class="stat-value">{{ stats.avg_compliance }}%</div>
+    <div class="stat-sub">Tous clients</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem">
+  <div class="card-header">
+    <h3>{{ cabinet.name }}</h3>
+    <a href="/cabinet/deadlines" class="btn btn-sm btn-ghost">&Eacute;ch&eacute;ances DGI</a>
+  </div>
+  {% if clients %}
+  <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Entreprise</th><th>ICE</th><th>Tranche CA</th><th>&Eacute;ch&eacute;ance DGI</th><th>Score</th><th>Statut</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for c in clients %}
+        <tr>
+          <td style="font-weight:500">{{ c.company_name }}</td>
+          <td style="font-family:monospace;font-size:0.8rem">{{ c.ice or '—' }}</td>
+          <td>{{ c.turnover_tier or '—' }}</td>
+          <td>{{ c.dgi_deadline or '—' }}</td>
+          <td><span class="badge {% if c.compliance_score >= 90 %}badge-success{% elif c.compliance_score >= 75 %}badge-warning{% else %}badge-danger{% endif %}">{{ c.compliance_score }} / {{ c.compliance_grade }}</span></td>
+          <td>{{ c.status }}</td>
+          <td><a href="/cabinet/clients/{{ c.id }}" class="btn btn-sm btn-ghost">D&eacute;tail</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="text-muted text-sm">Aucun client pour le moment.</p>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:1rem;max-width:640px">
+  <div class="card-header"><h3>Ajouter un client</h3></div>
+  <form method="post" action="/cabinet/clients/new">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token(request) }}">
+    <div class="form-group">
+      <label for="company_name">Raison sociale *</label>
+      <input id="company_name" name="company_name" required>
+    </div>
+    <div class="form-group">
+      <label for="ice">ICE (15 chiffres)</label>
+      <input id="ice" name="ice" maxlength="15">
+    </div>
+    <div style="display:flex;gap:0.75rem">
+      <div class="form-group" style="flex:1">
+        <label for="rc">RC</label>
+        <input id="rc" name="rc">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label for="if_number">IF</label>
+        <input id="if_number" name="if_number">
+      </div>
+      <div class="form-group" style="flex:1">
+        <label for="turnover_tier">Tranche CA</label>
+        <select id="turnover_tier" name="turnover_tier">
+          <option value="TPE">TPE</option>
+          <option value="PME" selected>PME</option>
+          <option value="medium">Grande entreprise</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+  </form>
+</div>
+{% endblock %}

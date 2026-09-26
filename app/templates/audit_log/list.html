@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block page_title %}Journal d'audit{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Journal d'audit</h1>
+</div>
+
+<div class="filter-bar">
+  <form method="get">
+    <select name="entity_type" onchange="this.form.submit()">
+      <option value="">Toutes les entit&eacute;s</option>
+      {% for et in entity_types %}
+      <option value="{{ et }}" {{ 'selected' if entity_type == et else '' }}>{{ et }}</option>
+      {% endfor %}
+    </select>
+    <select name="action" onchange="this.form.submit()">
+      <option value="">Toutes les actions</option>
+      {% for a in actions %}
+      <option value="{{ a }}" {{ 'selected' if action == a else '' }}>{{ a }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+{% if page_obj.items %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr><th>Date/Heure</th><th>Action</th><th>Entit&eacute;</th><th>ID</th><th>Utilisateur</th></tr>
+    </thead>
+    <tbody>
+      {% for log in page_obj.items %}
+      <tr>
+        <td style="white-space:nowrap">{{ log.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>
+          <span class="status">
+            <span class="status-dot {% if log.action == 'create' %}validated{% elif log.action == 'delete' %}cancelled{% else %}sent{% endif %}"></span>
+            {{ log.action }}
+          </span>
+        </td>
+        <td>{{ log.entity_type }}</td>
+        <td style="font-size:0.78rem;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis">{{ log.entity_id }}</td>
+        <td>{{ log.user_id[:8] if log.user_id else '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if page_obj.pages > 1 %}
+<div class="pagination">
+  {% if page_obj.has_prev %}<a href="?page={{ page_obj.prev_num }}{% if entity_type %}&entity_type={{ entity_type }}{% endif %}{% if action %}&action={{ action }}{% endif %}">&laquo;</a>{% endif %}
+  {% for p in page_obj.page_range %}<a href="?page={{ p }}{% if entity_type %}&entity_type={{ entity_type }}{% endif %}{% if action %}&action={{ action }}{% endif %}" class="{{ 'current' if p == page_obj.page else '' }}">{{ p }}</a>{% endfor %}
+  {% if page_obj.has_next %}<a href="?page={{ page_obj.next_num }}{% if entity_type %}&entity_type={{ entity_type }}{% endif %}{% if action %}&action={{ action }}{% endif %}">&raquo;</a>{% endif %}
+  <span class="text-muted text-sm" style="margin-left:0.5rem">{{ page_obj.total }} entr&eacute;e{{ 's' if page_obj.total != 1 else '' }}</span>
+</div>
+{% endif %}
+{% else %}
+<div class="empty-state">
+  <p>Aucune entr&eacute;e dans le journal d'audit</p>
+</div>
+{% endif %}
+{% endblock %}
