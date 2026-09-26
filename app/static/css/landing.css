@@ -108,50 +108,18 @@
 .lp-hero-note { margin-top: 18px; font-size: 0.85rem; color: #8fa2bd; display: flex; align-items: center; gap: 8px; }
 .lp-hero-note svg { color: var(--lp-gold); flex-shrink: 0; }
 
-/* Hero visual — mock facture */
+/* Hero artwork */
 .lp-hero-visual { position: relative; }
-.lp-invoice-card {
-  background: #fff; color: var(--lp-ink);
-  border-radius: 20px; padding: 26px;
-  box-shadow: 0 30px 70px rgba(0,0,0,0.45), 0 2px 0 rgba(255,255,255,0.06) inset;
-  transform: rotate(1.2deg);
+.lp-hero-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 16px;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.42), 0 0 42px rgba(220,38,38,0.1);
 }
-.lp-invoice-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
-.lp-invoice-head .co { font-weight: 800; font-size: 1.05rem; color: var(--lp-navy); }
-.lp-invoice-head .meta { text-align: right; font-size: 0.78rem; color: var(--lp-muted); line-height: 1.5; }
-.lp-invoice-head .meta b { color: var(--lp-navy); font-size: 0.95rem; }
-.lp-chip {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
-  padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
-}
-.lp-chip.ok { background: #e7f7f4; color: #0f766e; }
-.lp-chip.ok::before { content: "✓"; font-size: 0.8rem; }
-.lp-invoice-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-.lp-invoice-table th {
-  text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em;
-  color: var(--lp-muted); padding: 8px 6px; border-bottom: 1.5px solid #ece7dd;
-}
-.lp-invoice-table td { padding: 9px 6px; border-bottom: 1px solid #f3efe7; }
-.lp-invoice-table .num { text-align: right; font-variant-numeric: tabular-nums; }
-.lp-invoice-total { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 2px solid var(--lp-navy); }
-.lp-invoice-total .lbl { font-size: 0.8rem; color: var(--lp-muted); font-weight: 600; }
-.lp-invoice-total .amt { font-size: 1.35rem; font-weight: 800; color: var(--lp-navy); letter-spacing: -0.02em; }
-.lp-invoice-watermark {
-  margin-top: 14px; text-align: center; font-size: 0.68rem; letter-spacing: 0.06em;
-  color: #b3a88f; text-transform: uppercase; font-weight: 600;
-}
-.lp-float-card {
-  position: absolute; left: -26px; bottom: -24px;
-  background: var(--lp-navy-3); color: #dfe8f5;
-  border: 1px solid rgba(200,155,60,0.3);
-  border-radius: 14px; padding: 12px 18px;
-  display: flex; align-items: center; gap: 12px;
-  box-shadow: 0 16px 40px rgba(0,0,0,0.4);
-  font-size: 0.82rem; font-weight: 600;
-}
-.lp-float-card .num { font-size: 1.25rem; font-weight: 800; color: var(--lp-gold-light); }
-.lp-float-card small { display: block; font-weight: 500; color: #93a5c0; font-size: 0.72rem; }
 
 /* ── Trust bar ───────────────────────────────────────────── */
 .lp-trust { border-bottom: 1px solid rgba(15,30,54,0.08); background: #fff; }
@@ -259,15 +227,12 @@
 
 /* ── RTL (arabe) ─────────────────────────────────────────── */
 .lp[dir="rtl"] .lp-nav-inner, .lp[dir="rtl"] .lp-hero-grid, .lp[dir="rtl"] .lp-footer-inner { direction: rtl; }
-.lp[dir="rtl"] .lp-invoice-head .meta { text-align: left; }
-.lp[dir="rtl"] .lp-invoice-table th, .lp[dir="rtl"] .lp-invoice-table td { text-align: right; }
-.lp[dir="rtl"] .lp-invoice-table .num { text-align: left; }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 940px) {
   .lp-hero-grid { grid-template-columns: 1fr; gap: 48px; }
   .lp-hero { padding: 72px 0 96px; }
-  .lp-hero-visual { max-width: 480px; margin: 0 auto; }
+  .lp-hero-visual { max-width: 560px; width: 100%; margin: 0 auto; }
   .lp-features { grid-template-columns: repeat(2, 1fr); }
   .lp-steps { grid-template-columns: 1fr; }
   .lp-security { grid-template-columns: 1fr; }
@@ -277,7 +242,6 @@
   .lp-features { grid-template-columns: 1fr; }
   .lp-section { padding: 68px 0; }
   .lp-trust-inner { flex-direction: column; align-items: flex-start; }
-  .lp-float-card { left: 8px; }
 }
 
 /* Scroll reveal */
