@@ -1,8 +1,10 @@
 # COMPLY-MA
 
-Moroccan electronic invoicing structuring and archiving software designed for DGI compliance workflows. COMPLY-MA helps businesses prepare, validate, sign, and archive electronic invoices. It is not accounting or tax advice; have a qualified accountant review your compliance requirements.
+![COMPLY-MA electronic invoicing, VAT verification, digital signatures, and secure archiving](app/static/images/comply-ma-hero.png)
 
 **Demo video:** [Watch the COMPLY-MA product demo on YouTube](https://youtu.be/qtwNgGZ2LUA)
+
+Moroccan electronic invoicing structuring and archiving software designed for DGI compliance workflows. COMPLY-MA helps businesses prepare, validate, sign, and archive electronic invoices. It is not accounting or tax advice; have a qualified accountant review your compliance requirements.
 
 ## Features
 

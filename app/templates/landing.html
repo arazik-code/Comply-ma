@@ -69,15 +69,43 @@
         </p>
       </div>
 
-      <div class="lp-hero-visual">
-        <img
-          class="lp-hero-art"
-          src="/static/images/comply-ma-hero.png"
-          alt="COMPLY-MA: structured XML invoicing, verified VAT calculations, digital signatures, and secure archiving for Moroccan DGI compliance."
-          width="1664"
-          height="936"
-          fetchpriority="high"
-          decoding="async">
+      <div class="lp-hero-visual lp-reveal">
+        <div class="lp-invoice-card">
+          <div class="lp-invoice-head">
+            <div>
+              <div class="co">TEST SARL</div>
+              <div style="font-size:0.75rem;color:var(--lp-muted)">Casablanca · ICE 5555…555</div>
+            </div>
+            <div class="meta">
+              <b>FACTURE F-2026-000001</b><br>
+              15/06/2026<br>
+              <span class="lp-chip ok" style="margin-top:6px">Conforme DGI</span>
+            </div>
+          </div>
+          <table class="lp-invoice-table">
+            <thead><tr><th>Désignation</th><th class="num">Qté</th><th class="num">Montant HT</th></tr></thead>
+            <tbody>
+              <tr><td>Ordinateur portable Dell</td><td class="num">2</td><td class="num">17 000,00</td></tr>
+              <tr><td>Clavier mécanique</td><td class="num">3</td><td class="num">1 050,00</td></tr>
+              <tr><td>Conseil (5 jours)</td><td class="num">5</td><td class="num">12 500,00</td></tr>
+            </tbody>
+          </table>
+          <div class="lp-invoice-total">
+            <span class="lbl">Total TTC · TVA 20 % / 14 %</span>
+            <span class="amt">36 597,00 MAD</span>
+          </div>
+          <div class="lp-invoice-watermark">Copie visuelle — l'original est le fichier XML signé</div>
+        </div>
+        <div class="lp-float-card">
+          <div>
+            <span class="num">97</span>
+            <small>Score conformité moyen</small>
+          </div>
+          <div>
+            <span class="num">10 ans</span>
+            <small>Rétention légale</small>
+          </div>
+        </div>
       </div>
     </div>
   </header>
